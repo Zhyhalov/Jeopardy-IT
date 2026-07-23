@@ -226,17 +226,16 @@ class TeamSetupWidget(QWidget):
 
     def confirm_and_start(self):
         teams = []
-        if set(self.team_inputs) != self.team_inputs:
-            QMessageBox.warning(self, "Помилка", "Є однакові назви команд")
-            return
         for _, line_edit in self.team_inputs:
             name = line_edit.text().strip()
             if not name:
-                QMessageBox.warning(self, "Помилка", "Заповність назви усіх команд")
+                QMessageBox.warning(self, "Помилка: Заповність назви усіх команд", "Заповність назви усіх команд")
                 return
 
             teams.append(name)
-
+        if len(set(teams)) != len(teams):
+            QMessageBox.warning(self, f"Помилка", "Є однакові назви команд")
+            return
         self.on_start_callback(teams)
 
 
@@ -284,7 +283,7 @@ class QuestionOverlay(QFrame):
         self.media_image_label.setVisible(False)
         layout.addWidget(self.media_image_label, stretch=1)
 
-        # 2. Відео
+        # 2. Відео та Аудіо
         self.media_player = QMediaPlayer(self)
         self.audio_output = QAudioOutput(self)
         self.media_player.setAudioOutput(self.audio_output)
@@ -295,9 +294,11 @@ class QuestionOverlay(QFrame):
         self.media_player.setVideoOutput(self.video_widget)
         layout.addWidget(self.video_widget, stretch=1)
 
+        # Панель керування відтворенням
         self.video_controls = QWidget(self)
         video_ctrl_layout = QHBoxLayout(self.video_controls)
         video_ctrl_layout.setContentsMargins(0, 0, 0, 0)
+        video_ctrl_layout.setSpacing(10)
 
         self.play_pause_btn = QPushButton("Pause")
         self.play_pause_btn.setFont(QFont("Inter", 10, QFont.Bold))
@@ -307,6 +308,18 @@ class QuestionOverlay(QFrame):
         self.video_slider = QSlider(Qt.Horizontal)
         self.video_slider.sliderMoved.connect(self.set_video_position)
         video_ctrl_layout.addWidget(self.video_slider)
+
+        # Регулятор гучності
+        self.volume_label = QLabel("🔊")
+        self.volume_label.setFont(QFont("Inter", 11))
+        video_ctrl_layout.addWidget(self.volume_label)
+
+        self.volume_slider = QSlider(Qt.Horizontal)
+        self.volume_slider.setRange(0, 100)
+        self.volume_slider.setValue(100)
+        self.volume_slider.setFixedWidth(100)
+        self.volume_slider.valueChanged.connect(self.set_volume)
+        video_ctrl_layout.addWidget(self.volume_slider)
 
         self.video_controls.setVisible(False)
         layout.addWidget(self.video_controls)
@@ -324,7 +337,7 @@ class QuestionOverlay(QFrame):
         self.answer_label.setVisible(False)
         layout.addWidget(self.answer_label)
 
-        # Кнопки валідації
+        # Кнопки оцінки
         self.validation_container = QWidget()
         validation_layout = QHBoxLayout(self.validation_container)
         validation_layout.setContentsMargins(0, 0, 0, 0)
@@ -373,6 +386,9 @@ class QuestionOverlay(QFrame):
 
         layout.addLayout(btn_layout)
 
+    def set_volume(self, value):
+        self.audio_output.setVolume(value / 100.0)
+
     def show_question(self, question, target_button, category_name=""):
         self.current_question = question
         self.active_button = target_button
@@ -390,6 +406,11 @@ class QuestionOverlay(QFrame):
         self.video_widget.setVisible(False)
         self.video_controls.setVisible(False)
 
+        if self.media_player.playbackState() != QMediaPlayer.StoppedState:
+            self.media_player.stop()
+
+        self.set_volume(self.volume_slider.value())
+
         media_type = question.get("media_type", "none")
         media_path = question.get("media_path", None)
 
@@ -400,25 +421,17 @@ class QuestionOverlay(QFrame):
                 self.media_image_label.setPixmap(scaled_pixmap)
                 self.media_image_label.setVisible(True)
 
-        elif media_type == "video" and media_path:
+        elif media_type in ("video", "audio") and media_path:
             if os.path.exists(media_path):
                 abs_path = os.path.abspath(media_path)
                 self.media_player.setSource(QUrl.fromLocalFile(abs_path))
-                self.video_widget.setVisible(True)
-                self.video_controls.setVisible(True)
-                self.play_pause_btn.setText("Pause")
-                self.media_player.play()
-        # 3. Аудіо (Новий блок)
-        elif media_type == "audio" and media_path:
-            if os.path.exists(media_path):
-                abs_path = os.path.abspath(media_path)
-                self.media_player.setSource(QUrl.fromLocalFile(abs_path))
-                # Показуємо панель керування (Play/Pause та слайдер), але ховаємо відеоекрани
+                if media_type == "video":
+                    self.video_widget.setVisible(True)
                 self.video_controls.setVisible(True)
                 self.play_pause_btn.setText("Pause")
                 self.media_player.play()
             else:
-                self.media_image_label.setText(f"[Помилка: Аудіофайл '{media_path}' не знайдено]")
+                self.media_image_label.setText(f"[Помилка: Файл '{media_path}' не знайдено]")
                 self.media_image_label.setVisible(True)
 
         margin = 40
