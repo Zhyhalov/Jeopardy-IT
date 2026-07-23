@@ -73,12 +73,20 @@
           "media_path": "media/video/sample.mp4"
         },
         {
-          "id": "media_100",
+          "id": "media_200",
           "value": 200,
           "text": "Слухать.",
           "answer": "Ви зомбовані",
           "media_type": "audio",
           "media_path": "media/audio/1.mp3"
+        },
+        {
+          "id": "media_300",
+          "value": 300,
+          "text": "Пнг тест",
+          "answer": "ок",
+          "media_type": "image",
+          "media_path": "media/images/PNG_transparency_demonstration_1.png"
         }
       ]
     }
