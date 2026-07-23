@@ -192,8 +192,8 @@ class TeamSetupWidget(QWidget):
         self.start_game_btn.clicked.connect(self.confirm_and_start)
         main_layout.addWidget(self.start_game_btn)
 
-        self.add_team_input("Команда 1")
-        self.add_team_input("Команда 2")
+        self.add_team_input("")
+        self.add_team_input("")
 
     def add_team_input(self, default_name=""):
         row_widget = QWidget()
@@ -217,8 +217,8 @@ class TeamSetupWidget(QWidget):
         self.team_inputs.append((row_widget, line_edit))
 
     def remove_team_input(self, row_widget, line_edit):
-        if len(self.team_inputs) <= 1:
-            QMessageBox.warning(self, "Увага", "Потрібно залишити хоча б одну команду!")
+        if len(self.team_inputs) <= 2:
+            QMessageBox.warning(self, "Увага", "Дві команди мінімум")
             return
 
         self.team_inputs = [item for item in self.team_inputs if item[1] != line_edit]
@@ -226,11 +226,15 @@ class TeamSetupWidget(QWidget):
 
     def confirm_and_start(self):
         teams = []
+        if set(self.team_inputs) != self.team_inputs:
+            QMessageBox.warning(self, "Помилка", "Є однакові назви команд")
+            return
         for _, line_edit in self.team_inputs:
             name = line_edit.text().strip()
             if not name:
-                QMessageBox.warning(self, "Помилка", "Будь ласка, заповніть назви всіх команд!")
+                QMessageBox.warning(self, "Помилка", "Заповність назви усіх команд")
                 return
+
             teams.append(name)
 
         self.on_start_callback(teams)
