@@ -1,0 +1,78 @@
+{
+  "title": "IT Jeopardy 2026",
+  "settings": {
+    "subtract_on_wrong_answer": true,
+    "allow_repeated_attempt": false,
+    "default_timer": 30
+  },
+  "categories": [
+    {
+      "name": "Python",
+      "questions": [
+        {
+          "id": "python_100",
+          "value": 100,
+          "text": "Яка функція використовується для виводу тексту в консоль?",
+          "answer": "print()",
+          "media_type": "none",
+          "media_path": null
+        },
+        {
+          "id": "python_200",
+          "value": 200,
+          "text": "Що зображено на логотипі цієї технології?",
+          "answer": "Дві змії (синя та жовта)",
+          "media_type": "image",
+          "media_path": "media/images/python_logo.png"
+        }
+      ]
+    },
+    {
+      "name": "SQL",
+      "questions": [
+        {
+          "id": "sql_100",
+          "value": 100,
+          "text": "Яке оператор використовується для вибірки даних із бази?",
+          "answer": "SELECT",
+          "media_type": "none",
+          "media_path": null
+        },
+        {
+          "id": "sql_200",
+          "value": 200,
+          "text": "Прослухайте аудіопідказку та назвіть термін.",
+          "answer": "Primary Key",
+          "media_type": "audio",
+          "media_path": "media/audio/sql_sound.mp3"
+        }
+      ]
+    },
+    {
+      "name": "Мультимедіа",
+      "questions": [
+        {
+          "id": "media_100",
+          "value": 100,
+          "text": "Подивіться відео та відповідайте.",
+          "answer": "Відповідь на відеопитання",
+          "media_type": "video",
+          "media_path": "media/video/sample.mp4"
+        }
+      ]
+    },
+    {
+      "name": "Аудіо",
+      "questions": [
+        {
+          "id": "media_100",
+          "value": 100,
+          "text": "Подивіться відео та відповідайте.",
+          "answer": "Відповідь на відеопитання",
+          "media_type": "video",
+          "media_path": "media/video/sample.mp4"
+        }
+      ]
+    }
+  ]
+}
