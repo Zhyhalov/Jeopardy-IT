@@ -71,6 +71,14 @@
           "answer": "Відповідь на відеопитання",
           "media_type": "video",
           "media_path": "media/video/sample.mp4"
+        },
+        {
+          "id": "media_100",
+          "value": 200,
+          "text": "Слухать.",
+          "answer": "Ви зомбовані",
+          "media_type": "audio",
+          "media_path": "media/audio/1.mp3"
         }
       ]
     }

@@ -404,6 +404,18 @@ class QuestionOverlay(QFrame):
                 self.video_controls.setVisible(True)
                 self.play_pause_btn.setText("Pause")
                 self.media_player.play()
+        # 3. Аудіо (Новий блок)
+        elif media_type == "audio" and media_path:
+            if os.path.exists(media_path):
+                abs_path = os.path.abspath(media_path)
+                self.media_player.setSource(QUrl.fromLocalFile(abs_path))
+                # Показуємо панель керування (Play/Pause та слайдер), але ховаємо відеоекрани
+                self.video_controls.setVisible(True)
+                self.play_pause_btn.setText("Pause")
+                self.media_player.play()
+            else:
+                self.media_image_label.setText(f"[Помилка: Аудіофайл '{media_path}' не знайдено]")
+                self.media_image_label.setVisible(True)
 
         margin = 40
         parent_rect = self.parent().rect()
