@@ -14,6 +14,14 @@ from PySide6.QtGui import QFont, QPixmap
 from PySide6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PySide6.QtMultimediaWidgets import QVideoWidget
 
+import tkinter as tk
+
+root = tk.Tk()
+root.withdraw()
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+root.destroy()
+
 
 class ScoreBoardDialog(QDialog):
     def __init__(self, teams, scores, current_team_idx, parent=None):
@@ -512,13 +520,14 @@ class QuestionOverlay(QFrame):
         self.anim_fade.setEasingCurve(QEasingCurve.InCubic)
         self.anim_fade.finished.connect(lambda: self.setVisible(False))
         self.anim_fade.start()
+        self.anim_fade.start()
 
 
 class JeopardyApp(QMainWindow):
     def __init__(self, json_file_path="questions.json"):
         super().__init__()
         self.setWindowTitle("Jeopardy Game")
-        self.resize(1100, 750)
+        self.resize(screen_width-20, screen_height-50)
 
         self.game_data = self.load_questions(json_file_path)
         if not self.game_data:
