@@ -1,0 +1,18 @@
+[
+    {
+        "time": "00:02",
+        "team": "qwe",
+        "team_idx": 0,
+        "question": "SQL 100",
+        "is_correct": true,
+        "value": 100
+    },
+    {
+        "time": "00:03",
+        "team": "qwe",
+        "team_idx": 0,
+        "question": "Аудіо 300",
+        "is_correct": false,
+        "value": 300
+    }
+]

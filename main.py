@@ -19,7 +19,6 @@ class ScoreBoardDialog(QDialog):
     def __init__(self, teams, scores, current_team_idx, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Поточний рахунок")
-        self.setMinimumSize(700, 500)
         self.setModal(True)
 
         self.setStyleSheet("""
@@ -40,6 +39,9 @@ class ScoreBoardDialog(QDialog):
         title.setFont(QFont("Inter", 16, QFont.Bold))
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
+
+        grid_layout = QGridLayout()
+        grid_layout.setSpacing(12)
 
         for idx, team in enumerate(teams):
             score = scores.get(team, 0)
@@ -63,7 +65,15 @@ class ScoreBoardDialog(QDialog):
             row_layout.addWidget(score_label)
 
             layout.addLayout(row_layout)
+            # Додаємо назву в 0-й стовпчик, бали — в 1-й стовпчик
+            grid_layout.addWidget(name_label, idx, 0, Qt.AlignLeft | Qt.AlignVCenter)
+            grid_layout.addWidget(score_label, idx, 1, Qt.AlignRight | Qt.AlignVCenter)
 
+            # Розтягуємо перший стовпчик (з назвами), щоб бали притискалися до правого краю
+        grid_layout.setColumnStretch(0, 1)
+
+        layout.addLayout(grid_layout)
+        layout.addStretch()
         close_btn = QPushButton("Закрити")
         close_btn.clicked.connect(self.accept)
         layout.addWidget(close_btn, alignment=Qt.AlignCenter)
@@ -342,7 +352,7 @@ class QuestionOverlay(QFrame):
         validation_layout = QHBoxLayout(self.validation_container)
         validation_layout.setContentsMargins(0, 0, 0, 0)
 
-        self.btn_correct = QPushButton("✅ Відповідь зарахована")
+        self.btn_correct = QPushButton("Відповідь зарахована")
         self.btn_correct.setFont(QFont("Inter", 12, QFont.Bold))
         self.btn_correct.setStyleSheet("""
             QPushButton { background-color: #10B981; color: white; border-radius: 8px; padding: 10px 15px; }
@@ -350,7 +360,7 @@ class QuestionOverlay(QFrame):
         """)
         self.btn_correct.clicked.connect(lambda: self.submit_result(True))
 
-        self.btn_incorrect = QPushButton("❌ Відповідь не зарахована")
+        self.btn_incorrect = QPushButton("Відповідь не зарахована")
         self.btn_incorrect.setFont(QFont("Inter", 12, QFont.Bold))
         self.btn_incorrect.setStyleSheet("""
             QPushButton { background-color: #EF4444; color: white; border-radius: 8px; padding: 10px 15px; }
@@ -566,7 +576,7 @@ class JeopardyApp(QMainWindow):
     def update_score_button_text(self):
         current_team_name = self.teams[self.current_team_idx]
         self.scores_btn.setText(f"Команди ({current_team_name})")
-        self.scores_btn.setMinimumSize(200, 100)
+        self.scores_btn.setMinimumSize(300, 100)
 
     def show_score_board(self):
         dialog = ScoreBoardDialog(
@@ -579,12 +589,37 @@ class JeopardyApp(QMainWindow):
 
     def show_history_dialog(self):
         """Відкриває вікно історії дій з можливістю скасування"""
+        print(self.game_history)
         dialog = HistoryDialog(
             history=self.game_history,
             on_undo_callback=self.undo_last_action,
             parent=self
         )
         dialog.exec()
+
+
+    def save_game_history(self):
+        clean_history = []
+
+        for entry in self.game_history:
+            clean_entry = {
+                "time": entry["time"],
+                "team": entry["team"],
+                "team_idx": entry["team_idx"],
+                "question": entry["question"],
+                "is_correct": entry["is_correct"],
+                "value": entry["value"]
+            }
+            clean_history.append(clean_entry)
+
+        with open(f"saves/save_history_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.json", "w", encoding="utf-8") as f:
+            json.dump(clean_history, f, ensure_ascii=False, indent=4)
+
+        with open(f"saves/save_teams_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.json", "w", encoding="utf-8") as f:
+            json.dump(self.team_scores, f, ensure_ascii=False, indent=4)
+
+        QApplication.quit()
+
 
     def init_game_ui(self):
         main_layout = QVBoxLayout(self.game_widget)
@@ -594,7 +629,7 @@ class JeopardyApp(QMainWindow):
 
         # 1. Зліва: Кнопка «Історія дій»
         self.history_btn = QPushButton("Історія дій")
-        self.history_btn.setMinimumSize(200, 100)
+        self.history_btn.setMinimumSize(300, 100)
         self.history_btn.setFont(QFont("Inter", 11, QFont.Bold))
         self.history_btn.setStyleSheet("""
             QPushButton { background-color: #0284c7; color: white; border-radius: 8px; padding: 8px 16px; }
@@ -623,6 +658,16 @@ class JeopardyApp(QMainWindow):
         top_bar.addWidget(self.scores_btn, alignment=Qt.AlignRight)
 
         main_layout.addLayout(top_bar)
+
+
+        self.save_btn = QPushButton("Зберегти гру та вийти")
+        self.save_btn.setFixedSize(240, 50)
+        self.save_btn.setFont(QFont("Inter", 11, QFont.Bold))
+        self.save_btn.setStyleSheet("color: #FADADD; font-weight: bold;")
+        self.save_btn.clicked.connect(self.save_game_history)
+        save_place = QHBoxLayout()
+        save_place.addWidget(self.save_btn)
+        main_layout.addLayout(save_place)
 
         # --- ІГРОВА ДОШКА ---
         board_container = QWidget()
