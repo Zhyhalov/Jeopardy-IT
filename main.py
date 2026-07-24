@@ -22,69 +22,8 @@ screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 root.destroy()
 
-
-class ScoreBoardDialog(QDialog):
-    def __init__(self, teams, scores, current_team_idx, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Поточний рахунок")
-        self.setModal(True)
-
-        self.setStyleSheet("""
-            QDialog {
-                background-color: #1E1E38;
-                border: 2px solid #D81B60;
-                border-radius: 12px;
-            }
-            QLabel {
-                color: #FFFFFF;
-            }
-        """)
-
-        layout = QVBoxLayout(self)
-        layout.setSpacing(12)
-
-        title = QLabel("Таблиця команд")
-        title.setFont(QFont("Inter", 16, QFont.Bold))
-        title.setAlignment(Qt.AlignCenter)
-        layout.addWidget(title)
-
-        grid_layout = QGridLayout()
-        grid_layout.setSpacing(12)
-
-        for idx, team in enumerate(teams):
-            score = scores.get(team, 0)
-            is_current = (idx == current_team_idx)
-
-            row_layout = QHBoxLayout()
-
-            prefix = "-> " if is_current else "   "
-            name_label = QLabel(f"{prefix}{team}")
-            name_label.setFont(QFont("Inter", 13, QFont.Bold if is_current else QFont.Normal))
-
-            if is_current:
-                name_label.setStyleSheet("color: #FBBF24;")
-
-            score_label = QLabel(f"{score} балів")
-            score_label.setFont(QFont("Inter", 13, QFont.Bold))
-            score_label.setAlignment(Qt.AlignRight)
-
-            row_layout.addWidget(name_label)
-            row_layout.addStretch()
-            row_layout.addWidget(score_label)
-
-            layout.addLayout(row_layout)
-            # Додаємо назву в 0-й стовпчик, бали — в 1-й стовпчик
-            grid_layout.addWidget(name_label, idx, 0, Qt.AlignLeft | Qt.AlignVCenter)
-            grid_layout.addWidget(score_label, idx, 1, Qt.AlignRight | Qt.AlignVCenter)
-
-            # Розтягуємо перший стовпчик (з назвами), щоб бали притискалися до правого краю
-        grid_layout.setColumnStretch(0, 1)
-
-        layout.addLayout(grid_layout)
-        layout.addStretch()
-        close_btn = QPushButton("Закрити")
-        close_btn.clicked.connect(self.accept)
-        layout.addWidget(close_btn, alignment=Qt.AlignCenter)
+from widgets.score_board import ScoreBoardWindow
+from app_style import app_stylesheet
 
 
 class HistoryDialog(QDialog):
@@ -588,7 +527,7 @@ class JeopardyApp(QMainWindow):
         self.scores_btn.setMinimumSize(300, 100)
 
     def show_score_board(self):
-        dialog = ScoreBoardDialog(
+        dialog = ScoreBoardWindow(
             teams=self.teams,
             scores=self.team_scores,
             current_team_idx=self.current_team_idx,
@@ -796,50 +735,7 @@ if __name__ == "__main__":
 
     window = JeopardyApp("questions.json")
 
-    app_stylesheet = """
-        QMainWindow, QStackedWidget, TeamSetupWidget {
-            background-color: #FFD1DC;
-        }
 
-        QScrollArea, QScrollArea > QWidget > QWidget {
-            background-color: transparent;
-            border: none;
-        }
-
-        QLabel {
-            color: #1E1E38;
-            background-color: transparent;
-        }
-
-        QLineEdit {
-            background-color: #FFFFFF;
-            color: #1E1E38;
-            border: 2px solid #E8B8C4;
-            border-radius: 8px;
-            padding: 8px;
-        }
-
-        QLineEdit:focus {
-            border-color: #D81B60;
-        }
-
-        QPushButton {
-            background-color: #D81B60;
-            color: #FFFFFF;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-weight: bold;
-        }
-
-        QPushButton:hover {
-            background-color: #AD1457;
-        }
-
-        QPushButton:pressed {
-            background-color: #880E4F;
-        }
-    """
 
     window.setStyleSheet(app_stylesheet)
     window.show()
