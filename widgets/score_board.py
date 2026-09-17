@@ -13,7 +13,7 @@ class ScoreBoardWindow(QDialog):
         layout.setSpacing(12)
 
         title = QLabel("Таблиця команд")
-        title.setFont(QFont("Inter", 16, QFont.Bold))
+        title.setFont(QFont("Compfortaa", 16))
         title.setAlignment(Qt.AlignCenter)
         layout.addWidget(title)
 
@@ -22,19 +22,17 @@ class ScoreBoardWindow(QDialog):
 
         for idx, team in enumerate(teams):
             score = scores.get(team, 0)
-            is_current = (idx == current_team_idx)
 
             row_layout = QHBoxLayout()
 
-            prefix = "-> " if is_current else "   "
-            name_label = QLabel(f"{prefix}{team}")
-            name_label.setFont(QFont("Inter", 13, QFont.Bold if is_current else QFont.Normal))
+            name_label = QLabel(f"{team}")
+            name_label.setFont(QFont("Compfortaa", 13, QFont.Normal))
 
             # if is_current:
             #     name_label.setStyleSheet("color: #007FFF;")
 
             score_label = QLabel(f"{score} балів")
-            score_label.setFont(QFont("Inter", 13, QFont.Bold))
+            score_label.setFont(QFont("Compfortaa", 13))
             score_label.setAlignment(Qt.AlignRight)
 
             row_layout.addWidget(name_label)

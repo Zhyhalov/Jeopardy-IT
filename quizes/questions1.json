@@ -1,0 +1,31 @@
+{
+  "title": "IT Jeopardy 2026",
+  "settings": {
+    "subtract_on_wrong_answer": true,
+    "allow_repeated_attempt": false,
+    "default_timer": 30
+  },
+  "categories": [
+    {
+      "name": "Python",
+      "questions": [
+        {
+          "id": "python_100",
+          "value": 100,
+          "text": "Яка функція використовується для виводу тексту в консоль?",
+          "answer": "print()",
+          "media_type": "none",
+          "media_path": null
+        },
+        {
+          "id": "python_200",
+          "value": 200,
+          "text": "Що зображено на логотипі цієї технології?",
+          "answer": "Дві змії (синя та жовта)",
+          "media_type": "image",
+          "media_path": "media/images/python_logo.png"
+        }
+      ]
+    }
+  ]
+}
