@@ -599,12 +599,17 @@ class JeopardyApp(QMainWindow):
             return
 
         try:
-            # 1. Відновлення налаштувань (якщо файл існує)
+            # 1. Відновлення налаштувань та загального таймера
             if os.path.exists(settings_path):
                 with open(settings_path, "r", encoding="utf-8") as f:
-                    self.game_settings = json.load(f)
-                # Оновлюємо базу питань на випадок, якщо грали за іншим файлом
-                self.game_data = self.load_questions(self.game_settings.get("questions_file", "questions.json"))
+                    saved_settings = json.load(f)
+
+                # Відновлюємо збережені секунди
+                self.time_seconds = saved_settings.pop("time_seconds", 0)
+                self.game_settings = saved_settings
+                self.game_data = self.load_questions(self.game_settings.get("questions_file", "quizes/questions.json"))
+            else:
+                self.time_seconds = 0
 
             # 2. Відновлення команд та історії
             with open(teams_path, "r", encoding="utf-8") as f:
@@ -614,21 +619,25 @@ class JeopardyApp(QMainWindow):
             with open(history_path, "r", encoding="utf-8") as f:
                 loaded_history = json.load(f)
 
-            # Будуємо ігрове поле за відновленими налаштуваннями
+            # Будуємо інтерфейс
             self.init_game_ui()
 
-            # 3. Синхронізуємо тривалість таймера в оверлеї
+            # Оновлюємо плашку таймера одразу, щоб не чекати першої секунди
+            time_obj = QTime(0, 0, 0).addSecs(self.time_seconds)
+            self.timer_label.setText(time_obj.toString("mm:ss"))
+
+            # 3. Синхронізуємо тривалість таймера на питання в оверлеї
             if hasattr(self, 'overlay') and self.overlay is not None:
                 self.overlay.set_timer_duration(self.game_settings.get("timer_seconds", 30))
 
-            # 4. Відновлюємо історію та стан зіграних кнопок
+            # 4. Відновлюємо історію та деактивовані кнопки
             self.game_history = []
             for entry in loaded_history:
                 btn = self.buttons_map.get(entry["question"])
                 entry["button"] = btn
                 self.game_history.append(entry)
 
-                if entry["is_correct"] and btn:
+                if entry.get("is_correct") and btn:
                     btn.setEnabled(False)
                     btn.setStyleSheet("""
                         QPushButton { background-color: #94a3b8; color: #64748b; border: 1px solid #cbd5e1; border-radius: 6px; }
@@ -636,7 +645,7 @@ class JeopardyApp(QMainWindow):
 
             if self.game_history:
                 last_entry = self.game_history[-1]
-                if last_entry["is_correct"]:
+                if last_entry.get("is_correct"):
                     self.current_team_idx = last_entry["team_idx"]
                 else:
                     self.current_team_idx = (last_entry["team_idx"] + 1) % len(self.teams)
@@ -745,11 +754,14 @@ class JeopardyApp(QMainWindow):
         with open(f"saves/save_teams_{timestamp}.json", "w", encoding="utf-8") as f:
             json.dump(self.team_scores, f, ensure_ascii=False, indent=4)
 
-        # 2. Збереження активних налаштувань гри
-        with open(f"saves/save_settings_{timestamp}.json", "w", encoding="utf-8") as f:
-            json.dump(self.game_settings, f, ensure_ascii=False, indent=4)
+        # 2. Збереження налаштувань разом із загальним таймером гри
+        settings_to_save = self.game_settings.copy()
+        settings_to_save["time_seconds"] = self.time_seconds  # 👈 Зберігаємо час
 
-        # 3. Очищення старих сейвів (залишаємо 3 найновіших набори файлів)
+        with open(f"saves/save_settings_{timestamp}.json", "w", encoding="utf-8") as f:
+            json.dump(settings_to_save, f, ensure_ascii=False, indent=4)
+
+        # 3. Ротація файлів (до 3 найновіших)
         MAX_SAVES = 3
         history_files = sorted(glob.glob("saves/save_history_*.json"), key=os.path.getmtime)
         team_files = sorted(glob.glob("saves/save_teams_*.json"), key=os.path.getmtime)
@@ -966,23 +978,26 @@ class JeopardyApp(QMainWindow):
         self.update_score_button_text()
 
 
+
 if __name__ == "__main__":
-    if __name__ == "__main__":
-        app = QApplication(sys.argv)
+    if getattr(sys, 'frozen', False):
+        app_dir = os.path.dirname(sys.executable)
+        os.chdir(app_dir)
+    app = QApplication(sys.argv)
 
-        font_path = "fonts/Comfortaa-VariableFont_wght.ttf"
-        font_id = QFontDatabase.addApplicationFont(font_path)
+    font_path = "fonts/Comfortaa-VariableFont_wght.ttf"
+    font_id = QFontDatabase.addApplicationFont(font_path)
 
-        if font_id != -1:
-            families = QFontDatabase.applicationFontFamilies(font_id)
-            if families:
-                app_font_family = families[0]
-                app.setFont(QFont(app_font_family, 11))
-        else:
-            print(f"Не вдалося завантажити шрифт із {font_path}")
+    if font_id != -1:
+        families = QFontDatabase.applicationFontFamilies(font_id)
+        if families:
+            app_font_family = families[0]
+            app.setFont(QFont(app_font_family, 11))
+    else:
+        print(f"Не вдалося завантажити шрифт із {font_path}")
 
-        window = JeopardyApp("quizes/questions.json")
-        window.setStyleSheet(app_stylesheet)
-        window.show()
+    window = JeopardyApp("quizes/questions.json")
+    window.setStyleSheet(app_stylesheet)
+    window.show()
 
-        sys.exit(app.exec())
+    sys.exit(app.exec())
